@@ -1,0 +1,43 @@
+{
+  "name": "auxilium",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@fontsource-variable/merriweather": "^5.2.3",
+    "@fontsource-variable/montserrat": "^5.2.5",
+    "@fontsource-variable/source-code-pro": "^5.2.6",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@tailwindcss/vite": "^4.1.8",
+    "@tanstack/react-router": "^1.120.16",
+    "@tanstack/react-router-devtools": "^1.120.16",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-opener": "^2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.513.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^4.1.8"
+  },
+  "devDependencies": {
+    "@tanstack/router-plugin": "^1.120.16",
+    "@tauri-apps/cli": "^2",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.12",
+    "tw-animate-css": "^1.3.4",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.3"
+  }
+}
