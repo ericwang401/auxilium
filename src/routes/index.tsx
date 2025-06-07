@@ -1,16 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
-import { Button } from '@/components/ui/button.tsx'
+import DropOverlay from '@/components/interfaces/home/DropOverlay.tsx'
+import FileInput from '@/components/interfaces/home/FileInput.tsx'
+import Toolbar from '@/components/ui/Navigation/Toolbar.tsx'
 
 export const Route = createFileRoute('/')({
     component: Index,
 })
 
 function Index() {
+
     return (
-        <div className='p-2'>
-            <Button>Lmao</Button>
-            <h1 className={'text-xl'}>test</h1>
+        <div className={'p-2 size-full'}>
+            <DropOverlay />
+            <FileInput />
         </div>
     )
 }
