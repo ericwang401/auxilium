@@ -1,22 +1,18 @@
 import {
     Menubar,
-    MenubarCheckboxItem,
     MenubarContent,
     MenubarItem,
     MenubarMenu,
-    MenubarRadioGroup,
-    MenubarRadioItem,
-    MenubarSeparator,
-    MenubarShortcut,
-    MenubarSub,
-    MenubarSubContent,
-    MenubarSubTrigger,
     MenubarTrigger,
 } from '@/components/ui/menubar.tsx'
 
+
+
+
+
 const Toolbar = () => {
     return (
-        <Menubar className={'rounded-none border-x-0 border-t-0'}>
+        <Menubar className={'rounded-none border-none shadow-none'}>
             <MenubarMenu>
                 <MenubarTrigger>File</MenubarTrigger>
                 <MenubarContent>

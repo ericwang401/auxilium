@@ -1,19 +1,27 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
-import DropOverlay from '@/components/interfaces/home/DropOverlay.tsx'
-import FileInput from '@/components/interfaces/home/FileInput.tsx'
-import Toolbar from '@/components/ui/Navigation/Toolbar.tsx'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs.tsx'
+import AllTab from '@/components/interfaces/home/AllTab.tsx'
+import ReviewedTab from '@/components/interfaces/home/ReviewedTab.tsx'
+import UnreviewedTab from '@/components/interfaces/home/UnreviewedTab.tsx'
 
 export const Route = createFileRoute('/')({
     component: Index,
 })
 
 function Index() {
-
     return (
-        <div className={'p-2 size-full'}>
-            <DropOverlay />
-            <FileInput />
+        <div className={'p-2'}>
+            <Tabs defaultValue={'all'}>
+                <TabsList>
+                    <TabsTrigger value={'all'}>All</TabsTrigger>
+                    <TabsTrigger value={'reviewed'}>Reviewed</TabsTrigger>
+                    <TabsTrigger value={'unreviewed'}>Unreviewed</TabsTrigger>
+                </TabsList>
+                <AllTab />
+                <ReviewedTab />
+                <UnreviewedTab />
+            </Tabs>
         </div>
     )
 }

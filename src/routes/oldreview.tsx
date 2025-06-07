@@ -3,11 +3,11 @@ import useResearchReviewStore from '@/stores/research-review-store'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 
-export const Route = createFileRoute('/review')({
-    component: Review,
+export const Route = createFileRoute('/oldreview')({
+    component: Oldreview,
 })
 
-function Review() {
+function Oldreview() {
     const {
         getCurrentRecord,
         getCurrentRecordReview,

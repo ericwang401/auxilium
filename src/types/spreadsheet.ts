@@ -26,7 +26,7 @@ export interface SupportingEvidence {
     measurementPrecision: EvidenceSet
 }
 
-export interface ResearchRecord {
+export interface Paper {
     // Basic publication info
     title: string
     authors: string
@@ -59,12 +59,12 @@ export interface ResearchRecord {
 }
 
 export interface ParsedSpreadsheet {
-    records: ResearchRecord[]
+    records: Paper[]
     totalCount: number
 }
 
 // Utility types for filtering and searching
-export type ResearchRecordField = keyof Omit<ResearchRecord, 'supportingEvidence'>
+export type ResearchRecordField = keyof Omit<Paper, 'supportingEvidence'>
 export type EvidenceField = keyof SupportingEvidence
 export type EvidenceType = keyof EvidenceSet
 
@@ -78,7 +78,7 @@ export interface SearchFilters {
 }
 
 export interface SearchResult {
-    record: ResearchRecord
+    record: Paper
     matchedFields: ResearchRecordField[]
     relevanceScore: number
 }

@@ -1,5 +1,5 @@
 import { create } from 'zustand/react'
-import type { ResearchRecord } from '@/types/spreadsheet'
+import type { Paper } from '@/types/spreadsheet'
 
 export type ReviewStatus = 'pending' | 'correct' | 'incorrect'
 
@@ -33,7 +33,7 @@ export interface RecordReview {
 
 interface ResearchReviewState {
     // Current loaded records
-    records: ResearchRecord[]
+    records: Paper[]
     totalCount: number
     isLoading: boolean
     error: string | null
@@ -45,7 +45,7 @@ interface ResearchReviewState {
     currentRecordIndex: number
 
     // Actions
-    setRecords: (records: ResearchRecord[], totalCount: number) => void
+    setRecords: (records: Paper[], totalCount: number) => void
     setLoading: (loading: boolean) => void
     setError: (error: string | null) => void
 
@@ -60,10 +60,10 @@ interface ResearchReviewState {
     previousRecord: () => void
 
     // Utility getters
-    getCurrentRecord: () => ResearchRecord | null
+    getCurrentRecord: () => Paper | null
     getCurrentRecordReview: () => RecordReview | null
     getReviewProgress: () => { reviewed: number; total: number; percentage: number }
-    getRecordId: (record: ResearchRecord) => string
+    getRecordId: (record: Paper) => string
 
     // Reset
     reset: () => void

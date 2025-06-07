@@ -11,20 +11,27 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as ReviewImport } from './routes/review'
+import { Route as OldreviewImport } from './routes/oldreview'
 import { Route as IndexImport } from './routes/index'
+import { Route as ReviewPaperIdImport } from './routes/review.$paperId'
 
 // Create/Update Routes
 
-const ReviewRoute = ReviewImport.update({
-  id: '/review',
-  path: '/review',
+const OldreviewRoute = OldreviewImport.update({
+  id: '/oldreview',
+  path: '/oldreview',
   getParentRoute: () => rootRoute,
 } as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ReviewPaperIdRoute = ReviewPaperIdImport.update({
+  id: '/review/$paperId',
+  path: '/review/$paperId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -39,11 +46,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/review': {
-      id: '/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof ReviewImport
+    '/oldreview': {
+      id: '/oldreview'
+      path: '/oldreview'
+      fullPath: '/oldreview'
+      preLoaderRoute: typeof OldreviewImport
+      parentRoute: typeof rootRoute
+    }
+    '/review/$paperId': {
+      id: '/review/$paperId'
+      path: '/review/$paperId'
+      fullPath: '/review/$paperId'
+      preLoaderRoute: typeof ReviewPaperIdImport
       parentRoute: typeof rootRoute
     }
   }
@@ -53,37 +67,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/review': typeof ReviewRoute
+  '/oldreview': typeof OldreviewRoute
+  '/review/$paperId': typeof ReviewPaperIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/review': typeof ReviewRoute
+  '/oldreview': typeof OldreviewRoute
+  '/review/$paperId': typeof ReviewPaperIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/review': typeof ReviewRoute
+  '/oldreview': typeof OldreviewRoute
+  '/review/$paperId': typeof ReviewPaperIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/review'
+  fullPaths: '/' | '/oldreview' | '/review/$paperId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/review'
-  id: '__root__' | '/' | '/review'
+  to: '/' | '/oldreview' | '/review/$paperId'
+  id: '__root__' | '/' | '/oldreview' | '/review/$paperId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ReviewRoute: typeof ReviewRoute
+  OldreviewRoute: typeof OldreviewRoute
+  ReviewPaperIdRoute: typeof ReviewPaperIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ReviewRoute: ReviewRoute,
+  OldreviewRoute: OldreviewRoute,
+  ReviewPaperIdRoute: ReviewPaperIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/review"
+        "/oldreview",
+        "/review/$paperId"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/review": {
-      "filePath": "review.tsx"
+    "/oldreview": {
+      "filePath": "oldreview.tsx"
+    },
+    "/review/$paperId": {
+      "filePath": "review.$paperId.tsx"
     }
   }
 }
