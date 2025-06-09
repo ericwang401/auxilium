@@ -48,7 +48,7 @@ const PaperCard = ({ paper }: Props) => {
                     <dt>Reviews</dt>
                 </dl>
                 {completedReviews === totalReviews ? (
-                    <Check className='mt-2 size-4 text-green-500' />
+                    <Check className='mt-2 size-4 text-primary' />
                 ) : completedReviews > 0 ? (
                     <Hourglass className='mt-2 size-4 text-yellow-500' />
                 ) : null}
