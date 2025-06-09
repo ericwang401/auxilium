@@ -9,8 +9,10 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { parseSpreadsheet } from '@/api/spreadsheet'
 import { useReviewStore } from '@/stores/review'
 import { showNotification } from '@/utils/notification'
+import { useNavigate } from '@tanstack/react-router'
 
 const Toolbar = () => {
+    const navigate = useNavigate()
     const { loadSpreadsheet } = useReviewStore()
 
     const handleOpenSpreadsheet = async () => {
@@ -58,6 +60,14 @@ const Toolbar = () => {
                     </MenubarItem>
                     <MenubarItem>
                         Save auxl
+                    </MenubarItem>
+                </MenubarContent>
+            </MenubarMenu>
+            <MenubarMenu>
+                <MenubarTrigger>Navigate</MenubarTrigger>
+                <MenubarContent>
+                    <MenubarItem onClick={() => navigate({ to: '/' })}>
+                        Home
                     </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>
