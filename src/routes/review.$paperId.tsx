@@ -73,6 +73,7 @@ function RouteComponent() {
 
     const [selectedField, setSelectedField] =
         useState<ResearchRecordField>('researchGoal')
+    const [activeTab, setActiveTab] = useState('quotes')
 
     // Get the paperId from the route params
     const { paperId } = useParams({ from: '/review/$paperId' })
@@ -83,6 +84,82 @@ function RouteComponent() {
             setCurrentPaper(paperId)
         }
     }, [paperId, setCurrentPaper])
+
+    // Reset selected field when paper changes
+    useEffect(() => {
+        setSelectedField('researchGoal')
+    }, [currentPaper])
+
+    // Add keyboard event handler
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Tab switching shortcuts
+            if (e.key.toLowerCase() === 'q') {
+                setActiveTab('quotes')
+            } else if (e.key.toLowerCase() === 't') {
+                setActiveTab('tables')
+            } else if (e.key.toLowerCase() === 'r') {
+                setActiveTab('reasoning')
+            }
+
+            // Research detail navigation
+            if (e.key === 'ArrowUp') {
+                const fields: ResearchRecordField[] = [
+                    'researchGoal',
+                    'targetCondition',
+                    'hasSensorDevice',
+                    'deviceType',
+                    'category',
+                    'sensorType',
+                    'method',
+                    'placement',
+                    'measurementVariable',
+                    'benefits',
+                    'primaryPurpose',
+                    'performanceMetrics',
+                    'deviceLimitation',
+                    'measurementUnit',
+                    'measurementPrecision',
+                ]
+                const currentIndex = fields.indexOf(selectedField)
+                if (currentIndex > 0) {
+                    setSelectedField(fields[currentIndex - 1])
+                }
+            } else if (e.key === 'ArrowDown') {
+                const fields: ResearchRecordField[] = [
+                    'researchGoal',
+                    'targetCondition',
+                    'hasSensorDevice',
+                    'deviceType',
+                    'category',
+                    'sensorType',
+                    'method',
+                    'placement',
+                    'measurementVariable',
+                    'benefits',
+                    'primaryPurpose',
+                    'performanceMetrics',
+                    'deviceLimitation',
+                    'measurementUnit',
+                    'measurementPrecision',
+                ]
+                const currentIndex = fields.indexOf(selectedField)
+                if (currentIndex < fields.length - 1) {
+                    setSelectedField(fields[currentIndex + 1])
+                }
+            }
+
+            // Paper navigation
+            if (e.key === 'ArrowLeft' && canGoToPrevious) {
+                setCurrentPaperIndex(currentPaperNumber - 2)
+            } else if (e.key === 'ArrowRight' && canGoToNext) {
+                setCurrentPaperIndex(currentPaperNumber)
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [selectedField, canGoToPrevious, canGoToNext, currentPaperNumber, setCurrentPaperIndex])
 
     if (!currentPaper) {
         return null // The loader will handle the redirect
@@ -260,17 +337,17 @@ function RouteComponent() {
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel>
-                    <Tabs defaultValue={'quotes'} className='h-full'>
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full'>
                         <TabsList
                             className={
                                 '[&_button[data-state=active]]:border-foreground bg-transparent [&_button[data-state=active]]:border [&_button[data-state=active]]:bg-transparent [&_button[data-state=active]]:shadow-none'
                             }
                         >
                             <TabsTrigger value={'quotes'}>Quotes</TabsTrigger>
-                            <TabsTrigger value={'tables'}>Tables</TabsTrigger>
                             <TabsTrigger value={'reasoning'}>
                                 Reasoning
                             </TabsTrigger>
+                            <TabsTrigger value={'tables'}>Tables</TabsTrigger>
                         </TabsList>
                         <TabsContent value={'quotes'} className='h-full overflow-y-auto'>
                             <div
@@ -286,20 +363,6 @@ function RouteComponent() {
                                 </Markdown>
                             </div>
                         </TabsContent>
-                        <TabsContent value={'tables'} className='h-full overflow-y-auto'>
-                            <div
-                                className={
-                                    'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
-                                }
-                            >
-                                <Markdown>
-                                    {
-                                        currentPaper.supportingEvidence.benefits
-                                            .tables
-                                    }
-                                </Markdown>
-                            </div>
-                        </TabsContent>
                         <TabsContent value={'reasoning'} className='h-full overflow-y-auto'>
                             <div
                                 className={
@@ -310,6 +373,20 @@ function RouteComponent() {
                                     {
                                         currentPaper.supportingEvidence.benefits
                                             .reasoning
+                                    }
+                                </Markdown>
+                            </div>
+                        </TabsContent>
+                        <TabsContent value={'tables'} className='h-full overflow-y-auto'>
+                            <div
+                                className={
+                                    'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
+                                }
+                            >
+                                <Markdown>
+                                    {
+                                        currentPaper.supportingEvidence.benefits
+                                            .tables
                                     }
                                 </Markdown>
                             </div>
