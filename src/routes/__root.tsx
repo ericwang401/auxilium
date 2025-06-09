@@ -1,5 +1,4 @@
 import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 import Toolbar from '@/components/ui/Navigation/Toolbar.tsx'
 import NotificationPermission from '@/components/ui/NotificationPermission'

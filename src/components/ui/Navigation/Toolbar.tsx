@@ -5,18 +5,72 @@ import {
     MenubarMenu,
     MenubarTrigger,
 } from '@/components/ui/menubar'
-import { open } from '@tauri-apps/plugin-dialog'
+import { confirm, message, open } from '@tauri-apps/plugin-dialog'
 import { parseSpreadsheet, exportReviewData } from '@/api/spreadsheet'
 import { useReviewStore } from '@/stores/review'
 import { showNotification } from '@/utils/notification'
 import { useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { Window } from '@tauri-apps/api/window'
+import { getVersion } from '@tauri-apps/api/app';
+import { openUrl } from '@tauri-apps/plugin-opener';
+
+
 
 const Toolbar = () => {
     const navigate = useNavigate()
-    const { loadSpreadsheet, papers, ratings } = useReviewStore()
+    const {
+        loadSpreadsheet,
+        papers,
+        ratings,
+        openFile,
+        saveFile,
+        saveFileAs,
+        hasUnsavedChanges
+    } = useReviewStore()
+
+    useEffect(() => {
+        // Update window title to show unsaved changes
+        Window.getCurrent().setTitle(`auxilium${hasUnsavedChanges ? ' *' : ''}`)
+
+        // Add keyboard shortcuts
+        const handleKeyDown = async (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault()
+                if (e.shiftKey) {
+                    await saveFileAs()
+                } else {
+                    await saveFile()
+                }
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [hasUnsavedChanges])
+
+    // Add beforeunload handler
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (hasUnsavedChanges) {
+                e.preventDefault()
+                e.returnValue = ''
+            }
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload)
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    }, [hasUnsavedChanges])
 
     const handleOpenSpreadsheet = async () => {
         try {
+            if (papers.length > 0) {
+                const shouldContinue = await confirm('Are you sure you want to open a new spreadsheet? This will discard all your unsaved changes.')
+                if (!shouldContinue) {
+                    return
+                }
+            }
+
             const selected = await open({
                 multiple: false,
                 filters: [
@@ -69,6 +123,11 @@ const Toolbar = () => {
         }
     }
 
+    const showAbout = async () => {
+        const version = await getVersion()
+        message(`Auxilium is a tool for reviewing research papers (a overkill app for a very specific use case and very specific data format! lol)\n\nVersion: ${version}\n\nAuthor: Eric Wang`)
+    }
+
     return (
         <Menubar className='rounded-none border-none shadow-none'>
             <MenubarMenu>
@@ -80,13 +139,13 @@ const Toolbar = () => {
                     <MenubarItem onClick={handleExportSpreadsheet}>
                         Export spreadsheet
                     </MenubarItem>
-                    <MenubarItem>
+                    <MenubarItem onClick={openFile}>
                         Open auxl
                     </MenubarItem>
-                    <MenubarItem>
+                    <MenubarItem onClick={saveFile}>
                         Save auxl
                     </MenubarItem>
-                    <MenubarItem>
+                    <MenubarItem onClick={saveFileAs}>
                         Save auxl as
                     </MenubarItem>
                 </MenubarContent>
@@ -96,6 +155,17 @@ const Toolbar = () => {
                 <MenubarContent>
                     <MenubarItem onClick={() => navigate({ to: '/' })}>
                         Home
+                    </MenubarItem>
+                </MenubarContent>
+            </MenubarMenu>
+            <MenubarMenu>
+                <MenubarTrigger>Help</MenubarTrigger>
+                <MenubarContent>
+                    <MenubarItem onClick={showAbout}>
+                        About
+                    </MenubarItem>
+                    <MenubarItem onClick={() => openUrl('https://github.com/ericwang401/auxilium')}>
+                        Source code
                     </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>

@@ -1,12 +1,15 @@
 import { create } from 'zustand'
 import type { ResearchRecord, ResearchRecordField } from '@/types/spreadsheet'
+import { openAuxlFile, saveAuxlFile, serializeReviewState, deserializeReviewState } from '@/api/auxl'
+import { showNotification } from '@/utils/notification'
+import { writeTextFile } from '@tauri-apps/plugin-fs'
 
 interface ResearchDetailRating {
     rating: number
     timestamp: number
 }
 
-interface ReviewState {
+export interface ReviewState {
     papers: ResearchRecord[]
     currentPaper: ResearchRecord | null
     ratings: Record<string, Record<ResearchRecordField, ResearchDetailRating | null>>
@@ -19,6 +22,12 @@ interface ReviewState {
     canGoToNext: boolean
     canGoToPrevious: boolean
     setCurrentPaperIndex: (index: number) => void
+    currentFilePath: string | null
+    hasUnsavedChanges: boolean
+    openFile: () => Promise<void>
+    saveFile: () => Promise<void>
+    saveFileAs: () => Promise<void>
+    markUnsaved: () => void
 }
 
 export const useReviewStore = create<ReviewState>((set, get) => ({
@@ -29,6 +38,8 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
     totalPapers: 0,
     canGoToNext: false,
     canGoToPrevious: false,
+    currentFilePath: null,
+    hasUnsavedChanges: false,
     loadSpreadsheet: (papers) => {
         const ratings: Record<string, Record<ResearchRecordField, ResearchDetailRating | null>> = {}
         papers.forEach((paper) => {
@@ -64,7 +75,9 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
             totalPapers: papers.length,
             currentPaperNumber: 0,
             canGoToNext: papers.length > 1,
-            canGoToPrevious: false
+            canGoToPrevious: false,
+            currentFilePath: null,
+            hasUnsavedChanges: true
         })
     },
     setCurrentPaper: (filename) => {
@@ -104,10 +117,83 @@ export const useReviewStore = create<ReviewState>((set, get) => ({
                     },
                 },
             },
+            hasUnsavedChanges: true
         })
     },
     getResearchDetailRating: (filename, field) => {
         const { ratings } = get()
         return ratings[filename]?.[field]?.rating ?? null
     },
+    openFile: async () => {
+        try {
+            const content = await openAuxlFile()
+            if (content) {
+                const state = deserializeReviewState(content)
+                set({
+                    ...state,
+                    currentFilePath: null, // Will be set after first save
+                    hasUnsavedChanges: false
+                })
+                await showNotification('File Opened', 'Successfully loaded review data')
+            }
+        } catch (error) {
+            console.error('Error opening file:', error)
+            await showNotification(
+                'Error',
+                `Failed to open file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+        }
+    },
+    saveFile: async () => {
+        const { currentFilePath, hasUnsavedChanges } = get()
+        if (!hasUnsavedChanges) return
+
+        try {
+            const content = serializeReviewState(get())
+            if (!currentFilePath) {
+                // If no current file path, treat it as "Save As"
+                const path = await saveAuxlFile(content)
+                if (path) {
+                    set({
+                        currentFilePath: path,
+                        hasUnsavedChanges: false
+                    })
+                    await showNotification('File Saved', 'Successfully saved review data')
+                }
+            } else {
+                // If we have a current file path, save directly to it
+                await writeTextFile(currentFilePath, content)
+                set({ hasUnsavedChanges: false })
+                await showNotification('File Saved', 'Successfully saved review data')
+            }
+        } catch (error) {
+            console.error('Error saving file:', error)
+            await showNotification(
+                'Error',
+                `Failed to save file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+        }
+    },
+    saveFileAs: async () => {
+        try {
+            const content = serializeReviewState(get())
+            const path = await saveAuxlFile(content)
+            if (path) {
+                set({
+                    currentFilePath: path,
+                    hasUnsavedChanges: false
+                })
+                await showNotification('File Saved', 'Successfully saved review data')
+            }
+        } catch (error) {
+            console.error('Error saving file:', error)
+            await showNotification(
+                'Error',
+                `Failed to save file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+        }
+    },
+    markUnsaved: () => {
+        set({ hasUnsavedChanges: true })
+    }
 }))

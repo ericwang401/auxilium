@@ -3,7 +3,6 @@ import type { ResearchRecordField } from '@/types/spreadsheet'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useParams } from '@tanstack/react-router'
 import {
-    Ban,
     Check,
     ChevronLeft,
     ChevronRight,

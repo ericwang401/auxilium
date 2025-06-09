@@ -240,6 +240,8 @@ fn parse_csv_record(record: &csv::StringRecord) -> Result<ResearchRecord, String
 pub fn export_reviews(app: AppHandle, reviews: Vec<ReviewExport>) -> Result<(), String> {
     let mut writer = csv::Writer::from_writer(vec![]);
 
+    dbg!(&reviews);
+
     // Write header
     writer
         .write_record(&[
@@ -266,21 +268,21 @@ pub fn export_reviews(app: AppHandle, reviews: Vec<ReviewExport>) -> Result<(), 
     for review in reviews {
         let mut record = vec![review.filename];
         let fields = [
-            "research_goal",
-            "target_condition",
-            "has_sensor_device",
-            "device_type",
+            "researchGoal",
+            "targetCondition",
+            "hasSensorDevice",
+            "deviceType",
             "category",
-            "sensor_type",
+            "sensorType",
             "method",
             "placement",
-            "measurement_variable",
+            "measurementVariable",
             "benefits",
-            "primary_purpose",
-            "performance_metrics",
-            "device_limitation",
-            "measurement_unit",
-            "measurement_precision",
+            "primaryPurpose",
+            "performanceMetrics",
+            "deviceLimitation",
+            "measurementUnit",
+            "measurementPrecision",
         ];
 
         for field in fields {
