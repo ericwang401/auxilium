@@ -7,6 +7,7 @@ import {
     ChevronsLeft,
     ChevronsRight,
     Hourglass,
+    Star,
 } from 'lucide-react'
 import Markdown from 'react-markdown'
 import { z } from 'zod'
@@ -260,11 +261,19 @@ function RouteComponent() {
                     </Tabs>
                 </ResizablePanel>
             </ResizablePanelGroup>
-            <div className={'absolute right-2 bottom-2 flex gap-2'}>
-                <Button size={'sm'}>Approve</Button>
-                <Button size={'sm'} variant={'destructive'}>
-                    Reject
-                </Button>
+            <div
+                className={'absolute right-2 bottom-2 flex items-center gap-1'}
+            >
+                {[1, 2, 3, 4, 5].map(rating => (
+                    <button
+                        key={rating}
+                        className={`transition-colors hover:text-yellow-500 ${
+                            true ? 'text-yellow-500' : 'text-muted-foreground'
+                        }`}
+                    >
+                        <Star className='size-5' />
+                    </button>
+                ))}
             </div>
         </>
     )
