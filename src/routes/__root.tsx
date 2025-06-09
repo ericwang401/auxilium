@@ -9,10 +9,10 @@ export const Route = createRootRoute({
         <div className='flex h-screen flex-col'>
             <NotificationPermission />
             <Toolbar />
-            <main className='flex-1 overflow-hidden'>
+            <main className='relative flex-1 overflow-hidden'>
                 <Outlet />
             </main>
-            <TanStackRouterDevtools />
+            {/* <TanStackRouterDevtools /> */}
         </div>
     ),
 })

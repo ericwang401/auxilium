@@ -81,7 +81,7 @@ function RouteComponent() {
     )
 
     return (
-        <>
+        <div className='flex flex-col h-full'>
             <div className={'flex shrink-0 gap-12 border-b px-3 pb-2'}>
                 <div className={'grow truncate'}>
                     <h3
@@ -239,7 +239,7 @@ function RouteComponent() {
                     </Select>
                     <div
                         className={
-                            'h-full overflow-y-auto p-2 [&_ul]:list-disc [&_ul]:pl-5'
+                            'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
                         }
                     >
                         <Markdown>{currentPaper[selectedField]}</Markdown>
@@ -247,7 +247,7 @@ function RouteComponent() {
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel>
-                    <Tabs defaultValue={'quotes'}>
+                    <Tabs defaultValue={'quotes'} className='h-full'>
                         <TabsList
                             className={
                                 '[&_button[data-state=active]]:border-foreground bg-transparent [&_button[data-state=active]]:border [&_button[data-state=active]]:bg-transparent [&_button[data-state=active]]:shadow-none'
@@ -259,10 +259,10 @@ function RouteComponent() {
                                 Reasoning
                             </TabsTrigger>
                         </TabsList>
-                        <TabsContent value={'quotes'}>
+                        <TabsContent value={'quotes'} className='h-full overflow-y-auto'>
                             <div
                                 className={
-                                    'h-full overflow-y-auto p-2 [&_ul]:list-disc [&_ul]:pl-5'
+                                    'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
                                 }
                             >
                                 <Markdown>
@@ -273,10 +273,10 @@ function RouteComponent() {
                                 </Markdown>
                             </div>
                         </TabsContent>
-                        <TabsContent value={'tables'}>
+                        <TabsContent value={'tables'} className='h-full overflow-y-auto'>
                             <div
                                 className={
-                                    'h-full overflow-y-auto p-2 [&_ul]:list-disc [&_ul]:pl-5'
+                                    'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
                                 }
                             >
                                 <Markdown>
@@ -287,10 +287,10 @@ function RouteComponent() {
                                 </Markdown>
                             </div>
                         </TabsContent>
-                        <TabsContent value={'reasoning'}>
+                        <TabsContent value={'reasoning'} className='h-full overflow-y-auto'>
                             <div
                                 className={
-                                    'h-full overflow-y-auto p-2 [&_ul]:list-disc [&_ul]:pl-5'
+                                    'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
                                 }
                             >
                                 <Markdown>
@@ -304,7 +304,7 @@ function RouteComponent() {
                     </Tabs>
                 </ResizablePanel>
             </ResizablePanelGroup>
-            <div className={'absolute right-2 bottom-2 flex gap-2'}>
+            <div className={'absolute right-3 bottom-1 flex gap-2 p-1 rounded-md backdrop-blur-md'}>
                 <div className='flex items-center gap-1'>
                     {[1, 2, 3, 4, 5].map(rating => (
                         <button
@@ -327,6 +327,6 @@ function RouteComponent() {
                     ))}
                 </div>
             </div>
-        </>
+        </div>
     )
 }
