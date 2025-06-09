@@ -8,7 +8,7 @@ interface Props {
 const PaperCard = ({ paper }: Props) => {
     return (
         <article className={'flex gap-4 py-5'}>
-            <div className={'flex w-20 flex-col items-end pt-1'}>
+            <div className={'flex w-16 flex-col items-end pt-1 shrink-0'}>
                 <dl className={'text-xs text-right space-y-2'}>
                     <dd>{paper.citationCount}</dd>
                     <dt>

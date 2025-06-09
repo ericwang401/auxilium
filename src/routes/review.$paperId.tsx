@@ -1,6 +1,6 @@
 import { useReviewStore } from '@/stores/review'
 import type { ResearchRecordField } from '@/types/spreadsheet'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useParams } from '@tanstack/react-router'
 import {
     Ban,
@@ -43,6 +43,19 @@ const paperSearchSchema = z.object({
 export const Route = createFileRoute('/review/$paperId')({
     component: RouteComponent,
     validateSearch: paperSearchSchema,
+    loader: ({ params }) => {
+        const { paperId } = params
+        const { papers } = useReviewStore.getState()
+        const paper = papers.find((p) => p.filename === paperId)
+
+        if (!paper) {
+            throw redirect({
+                to: '/',
+            })
+        }
+
+        return paper
+    },
 })
 
 function RouteComponent() {
@@ -72,7 +85,7 @@ function RouteComponent() {
     }, [paperId, setCurrentPaper])
 
     if (!currentPaper) {
-        return <div>No paper selected</div>
+        return null // The loader will handle the redirect
     }
 
     const currentRating = getResearchDetailRating(

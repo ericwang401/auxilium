@@ -11,8 +11,8 @@ export const Route = createFileRoute('/')({
 
 function Index() {
     return (
-        <div className={'p-2'}>
-            <Tabs defaultValue={'all'}>
+        <div className={'p-2 h-full'}>
+            <Tabs className='h-full' defaultValue={'all'}>
                 <TabsList>
                     <TabsTrigger value={'all'}>All</TabsTrigger>
                     <TabsTrigger value={'reviewed'}>Reviewed</TabsTrigger>
