@@ -292,13 +292,13 @@ function RouteComponent() {
                                 Research Goal
                             </SelectItem>
                             <SelectItem value='targetCondition'>
-                                Target Condition
+                                Target condition
                             </SelectItem>
                             <SelectItem value='hasSensorDevice'>
-                                Has Sensor Device
+                                Sensor, device, imaging technique, or labratory testing mentioned?
                             </SelectItem>
                             <SelectItem value='deviceType'>
-                                Device Type
+                                Device / sensor / technique/ test/ inspection type
                             </SelectItem>
                             <SelectItem value='category'>Category</SelectItem>
                             <SelectItem value='sensorType'>
@@ -309,7 +309,7 @@ function RouteComponent() {
                             <SelectItem value='measurementVariable'>
                                 Measurement Variable
                             </SelectItem>
-                            <SelectItem value='benefits'>Benefits</SelectItem>
+                            <SelectItem value='benefits'>Benefits of use</SelectItem>
                             <SelectItem value='primaryPurpose'>
                                 Primary Purpose
                             </SelectItem>
