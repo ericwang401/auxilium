@@ -1,7 +1,16 @@
-# Tauri + React + Typescript
+## Keyboard Shortcuts
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+### Paper Navigation
+- `←` (Left Arrow): Navigate to previous paper
+- `→` (Right Arrow): Navigate to next paper
 
-## Recommended IDE Setup
+### Research Detail Navigation
+- `↑` (Up Arrow): Navigate to previous research detail
+- `↓` (Down Arrow): Navigate to next research detail
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+### Tab Navigation
+- `Q`: Switch to Quotes tab
+- `R`: Switch to Reasoning tab
+- `T`: Switch to Tables tab
+
+Note: When switching papers, the view automatically resets to the Research Goal field.
