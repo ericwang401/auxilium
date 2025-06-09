@@ -13,20 +13,13 @@ A tool for reviewing research papers (a overkill app for a very specific use cas
 
 Auxilium supports saving and loading review sessions in the `.auxl` format. This saves all your ratings and progress.
 
-### Keyboard Shortcuts
-
-- `Cmd/Ctrl + S`: Save the current review session
-  - If it's the first save, you'll be prompted to choose a location
-  - If you've saved before, it will save to the same file
-- `Cmd/Ctrl + Shift + S`: Save the review session to a new location
-- The window title will show a `*` when there are unsaved changes
-- You'll be warned when trying to close the app with unsaved changes
-
 ### File Menu
 
 - **Open auxl**: Load a previously saved review session
 - **Save auxl**: Save the current review session
 - **Save auxl as**: Save the current review session to a new location
+
+The window title will show a `*` when there are unsaved changes, and you'll be warned when trying to close the app with unsaved changes.
 
 ## Development
 
@@ -46,6 +39,12 @@ npm run tauri build
 MIT
 
 ## Keyboard Shortcuts
+
+### File Operations
+- `Cmd/Ctrl + S`: Save the current review session
+  - If it's the first save, you'll be prompted to choose a location
+  - If you've saved before, it will save to the same file
+- `Cmd/Ctrl + Shift + S`: Save the review session to a new location
 
 ### Paper Navigation
 - `←` (Left Arrow): Navigate to previous paper
