@@ -1,4 +1,7 @@
+import { useReviewStore } from '@/stores/review'
+import type { ResearchRecordField } from '@/types/spreadsheet'
 import { createFileRoute } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import {
     Ban,
     Check,
@@ -9,10 +12,9 @@ import {
     Hourglass,
     Star,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import Markdown from 'react-markdown'
 import { z } from 'zod'
-
-import { examplePaper } from '@/components/interfaces/home/AllTab.tsx'
 
 import { Button } from '@/components/ui/button.tsx'
 import {
@@ -44,16 +46,50 @@ export const Route = createFileRoute('/review/$paperId')({
 })
 
 function RouteComponent() {
+    const {
+        currentPaper,
+        currentPaperNumber,
+        totalPapers,
+        canGoToNext,
+        canGoToPrevious,
+        setCurrentPaperIndex,
+        setCurrentPaper,
+        rateResearchDetail,
+        getResearchDetailRating,
+    } = useReviewStore()
+
+    const [selectedField, setSelectedField] =
+        useState<ResearchRecordField>('researchGoal')
+
+    // Get the paperId from the route params
+    const { paperId } = useParams({ from: '/review/$paperId' })
+
+    // Set the current paper when the route changes
+    useEffect(() => {
+        if (paperId) {
+            setCurrentPaper(paperId)
+        }
+    }, [paperId, setCurrentPaper])
+
+    if (!currentPaper) {
+        return <div>No paper selected</div>
+    }
+
+    const currentRating = getResearchDetailRating(
+        currentPaper.filename,
+        selectedField
+    )
+
     return (
         <>
-            <div className={'flex shrink-0 gap-12 border-b px-3 py-2'}>
-                <div className={'truncate'}>
+            <div className={'flex shrink-0 gap-12 border-b px-3 pb-2'}>
+                <div className={'grow truncate'}>
                     <h3
                         className={
                             'truncate text-lg leading-relaxed font-medium'
                         }
                     >
-                        {examplePaper.title}
+                        {currentPaper.title}
                     </h3>
                     <p
                         className={
@@ -65,56 +101,62 @@ function RouteComponent() {
                                 'inline-block max-w-lg truncate align-middle'
                             }
                         >
-                            {examplePaper.authors}
+                            {currentPaper.authors}
                         </span>{' '}
-                        &middot; {examplePaper.venue} &middot; doi:{' '}
-                        {examplePaper.doi}
+                        &middot; {currentPaper.venue} &middot; doi:{' '}
+                        {currentPaper.doi}
                     </p>
                 </div>
                 <div className={'flex shrink-0 flex-col gap-1'}>
                     <div className={'flex gap-4'}>
                         <p className={'relative text-2xl font-medium'}>
-                            <span>37</span>
+                            <span>{currentPaperNumber}</span>
                             <span
                                 className={
                                     'mt-1 ml-1.5 inline-block align-top text-xs'
                                 }
                             >
-                                / 101
+                                / {totalPapers}
                             </span>
                         </p>
                         <div className={'flex gap-1'}>
                             <Button
                                 variant={'outline'}
                                 size={'icon'}
-                                className={''}
+                                onClick={() => setCurrentPaperIndex(0)}
+                                disabled={!canGoToPrevious}
                             >
-                                <ChevronsLeft />{' '}
-                                {/* this button goes to previous paper */}
+                                <ChevronsLeft />
                             </Button>
                             <Button
                                 variant={'outline'}
                                 size={'icon'}
-                                className={''}
+                                onClick={() =>
+                                    setCurrentPaperIndex(currentPaperNumber - 2)
+                                }
+                                disabled={!canGoToPrevious}
                             >
-                                <ChevronLeft />{' '}
-                                {/* this button goes to previous research detail to review */}
+                                <ChevronLeft />
                             </Button>
                             <Button
                                 variant={'outline'}
                                 size={'icon'}
-                                className={''}
+                                onClick={() =>
+                                    setCurrentPaperIndex(currentPaperNumber)
+                                }
+                                disabled={!canGoToNext}
                             >
-                                <ChevronRight />{' '}
-                                {/* this button goes to next paper */}
+                                <ChevronRight />
                             </Button>
                             <Button
                                 variant={'outline'}
                                 size={'icon'}
-                                className={''}
+                                onClick={() =>
+                                    setCurrentPaperIndex(totalPapers - 1)
+                                }
+                                disabled={!canGoToNext}
                             >
-                                <ChevronsRight />{' '}
-                                {/* this button goes to next research detail to review */}
+                                <ChevronsRight />
                             </Button>
                         </div>
                     </div>
@@ -140,30 +182,33 @@ function RouteComponent() {
                     </dl>
                 </div>
             </div>
-            <ResizablePanelGroup direction={'horizontal'}>
-                <ResizablePanel>
-                    <Select>
+            <ResizablePanelGroup direction='horizontal'>
+                <ResizablePanel defaultSize={50}>
+                    <Select
+                        value={selectedField}
+                        onValueChange={value =>
+                            setSelectedField(value as ResearchRecordField)
+                        }
+                    >
                         <SelectTrigger
                             className={
                                 'focus-visible:border-input w-full rounded-none border-x-0 border-t-0 shadow-none focus-visible:ring-0'
                             }
                         >
-                            <SelectValue />
+                            <SelectValue placeholder='Select a research detail' />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value='researchGoal'>
                                 Research Goal
                             </SelectItem>
                             <SelectItem value='targetCondition'>
-                                Target condition
+                                Target Condition
                             </SelectItem>
                             <SelectItem value='hasSensorDevice'>
-                                sensor, device, imaging technique, or labratory
-                                testing mentioned?
+                                Has Sensor Device
                             </SelectItem>
                             <SelectItem value='deviceType'>
-                                Device / sensor / technique/ test/ inspection
-                                type
+                                Device Type
                             </SelectItem>
                             <SelectItem value='category'>Category</SelectItem>
                             <SelectItem value='sensorType'>
@@ -174,9 +219,7 @@ function RouteComponent() {
                             <SelectItem value='measurementVariable'>
                                 Measurement Variable
                             </SelectItem>
-                            <SelectItem value='benefits'>
-                                Benefits of use
-                            </SelectItem>
+                            <SelectItem value='benefits'>Benefits</SelectItem>
                             <SelectItem value='primaryPurpose'>
                                 Primary Purpose
                             </SelectItem>
@@ -199,7 +242,7 @@ function RouteComponent() {
                             'h-full overflow-y-auto p-2 [&_ul]:list-disc [&_ul]:pl-5'
                         }
                     >
-                        <Markdown>{examplePaper.benefits}</Markdown>
+                        <Markdown>{currentPaper[selectedField]}</Markdown>
                     </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
@@ -224,7 +267,7 @@ function RouteComponent() {
                             >
                                 <Markdown>
                                     {
-                                        examplePaper.supportingEvidence.benefits
+                                        currentPaper.supportingEvidence.benefits
                                             .quotes
                                     }
                                 </Markdown>
@@ -238,7 +281,7 @@ function RouteComponent() {
                             >
                                 <Markdown>
                                     {
-                                        examplePaper.supportingEvidence.benefits
+                                        currentPaper.supportingEvidence.benefits
                                             .tables
                                     }
                                 </Markdown>
@@ -252,7 +295,7 @@ function RouteComponent() {
                             >
                                 <Markdown>
                                     {
-                                        examplePaper.supportingEvidence.benefits
+                                        currentPaper.supportingEvidence.benefits
                                             .reasoning
                                     }
                                 </Markdown>
@@ -261,19 +304,28 @@ function RouteComponent() {
                     </Tabs>
                 </ResizablePanel>
             </ResizablePanelGroup>
-            <div
-                className={'absolute right-2 bottom-2 flex items-center gap-1'}
-            >
-                {[1, 2, 3, 4, 5].map(rating => (
-                    <button
-                        key={rating}
-                        className={`transition-colors hover:text-yellow-500 ${
-                            true ? 'text-yellow-500' : 'text-muted-foreground'
-                        }`}
-                    >
-                        <Star className='size-5' />
-                    </button>
-                ))}
+            <div className={'absolute right-2 bottom-2 flex gap-2'}>
+                <div className='flex items-center gap-1'>
+                    {[1, 2, 3, 4, 5].map(rating => (
+                        <button
+                            key={rating}
+                            className={`text-muted-foreground transition-colors hover:text-yellow-500 ${
+                                currentRating === rating
+                                    ? 'text-yellow-500'
+                                    : ''
+                            }`}
+                            onClick={() =>
+                                rateResearchDetail(
+                                    currentPaper.filename,
+                                    selectedField,
+                                    rating
+                                )
+                            }
+                        >
+                            <Star className='size-5' />
+                        </button>
+                    ))}
+                </div>
             </div>
         </>
     )

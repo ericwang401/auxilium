@@ -1,8 +1,8 @@
-import { Paper } from '@/types'
+import type { ResearchRecord } from '@/types/spreadsheet'
 import { Link } from '@tanstack/react-router'
 
 interface Props {
-    paper: Paper
+    paper: ResearchRecord
 }
 
 const PaperCard = ({ paper }: Props) => {
@@ -16,8 +16,8 @@ const PaperCard = ({ paper }: Props) => {
                     </dt>
                 </dl>
             </div>
-            <div className={'shrink'}>
-                <Link to={'/review/$paperId'} params={{paperId: '123'}} className={'font-medium text-primary'}>
+            <div className={'shrink grow'}>
+                <Link to={'/review/$paperId'} params={{paperId: paper.filename}} className={'font-medium text-primary'}>
                     {paper.title}
                 </Link>
                 <p className={'text-sm text-muted-foreground'}>{paper.authors}</p>

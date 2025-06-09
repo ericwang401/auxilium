@@ -2,31 +2,7 @@
  * TypeScript types that correspond to the Rust structs for spreadsheet parsing
  */
 
-export interface EvidenceSet {
-    quotes: string
-    tables: string
-    reasoning: string
-}
-
-export interface SupportingEvidence {
-    researchGoal: EvidenceSet
-    targetCondition: EvidenceSet
-    sensorDevice: EvidenceSet
-    deviceType: EvidenceSet
-    category: EvidenceSet
-    sensorType: EvidenceSet
-    method: EvidenceSet
-    placement: EvidenceSet
-    measurementVariable: EvidenceSet
-    benefits: EvidenceSet
-    primaryPurpose: EvidenceSet
-    performanceMetrics: EvidenceSet
-    deviceLimitation: EvidenceSet
-    measurementUnit: EvidenceSet
-    measurementPrecision: EvidenceSet
-}
-
-export interface Paper {
+export interface ResearchRecord {
     // Basic publication info
     title: string
     authors: string
@@ -54,17 +30,41 @@ export interface Paper {
     measurementUnit: string
     measurementPrecision: string
 
-    // Supporting evidence (grouped by category)
+    // Supporting evidence
     supportingEvidence: SupportingEvidence
 }
 
+export interface SupportingEvidence {
+    researchGoal: EvidenceSet
+    targetCondition: EvidenceSet
+    sensorDevice: EvidenceSet
+    deviceType: EvidenceSet
+    category: EvidenceSet
+    sensorType: EvidenceSet
+    method: EvidenceSet
+    placement: EvidenceSet
+    measurementVariable: EvidenceSet
+    benefits: EvidenceSet
+    primaryPurpose: EvidenceSet
+    performanceMetrics: EvidenceSet
+    deviceLimitation: EvidenceSet
+    measurementUnit: EvidenceSet
+    measurementPrecision: EvidenceSet
+}
+
+export interface EvidenceSet {
+    quotes: string
+    tables: string
+    reasoning: string
+}
+
 export interface ParsedSpreadsheet {
-    records: Paper[]
+    records: ResearchRecord[]
     totalCount: number
 }
 
 // Utility types for filtering and searching
-export type ResearchRecordField = keyof Omit<Paper, 'supportingEvidence'>
+export type ResearchRecordField = keyof Omit<ResearchRecord, 'supportingEvidence'>
 export type EvidenceField = keyof SupportingEvidence
 export type EvidenceType = keyof EvidenceSet
 
@@ -78,7 +78,7 @@ export interface SearchFilters {
 }
 
 export interface SearchResult {
-    record: Paper
+    record: ResearchRecord
     matchedFields: ResearchRecordField[]
     relevanceScore: number
 }
