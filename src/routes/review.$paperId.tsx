@@ -46,7 +46,7 @@ export const Route = createFileRoute('/review/$paperId')({
     loader: ({ params }) => {
         const { paperId } = params
         const { papers } = useReviewStore.getState()
-        const paper = papers.find((p) => p.filename === paperId)
+        const paper = papers.find(p => p.filename === paperId)
 
         if (!paper) {
             throw redirect({
@@ -57,6 +57,25 @@ export const Route = createFileRoute('/review/$paperId')({
         return paper
     },
 })
+
+// Define research fields that need to be reviewed
+const researchFields: ResearchRecordField[] = [
+    'researchGoal',
+    'targetCondition',
+    'hasSensorDevice',
+    'deviceType',
+    'category',
+    'sensorType',
+    'method',
+    'placement',
+    'measurementVariable',
+    'benefits',
+    'primaryPurpose',
+    'performanceMetrics',
+    'deviceLimitation',
+    'measurementUnit',
+    'measurementPrecision',
+]
 
 function RouteComponent() {
     const {
@@ -69,6 +88,7 @@ function RouteComponent() {
         setCurrentPaper,
         rateResearchDetail,
         getResearchDetailRating,
+        papers,
     } = useReviewStore()
 
     const [selectedField, setSelectedField] =
@@ -102,50 +122,22 @@ function RouteComponent() {
                 setActiveTab('reasoning')
             }
 
+            // Star rating shortcuts (1-5)
+            if (e.key >= '1' && e.key <= '5' && currentPaper) {
+                const rating = parseInt(e.key)
+                rateResearchDetail(currentPaper.filename, selectedField, rating)
+            }
+
             // Research detail navigation
             if (e.key === 'ArrowUp') {
-                const fields: ResearchRecordField[] = [
-                    'researchGoal',
-                    'targetCondition',
-                    'hasSensorDevice',
-                    'deviceType',
-                    'category',
-                    'sensorType',
-                    'method',
-                    'placement',
-                    'measurementVariable',
-                    'benefits',
-                    'primaryPurpose',
-                    'performanceMetrics',
-                    'deviceLimitation',
-                    'measurementUnit',
-                    'measurementPrecision',
-                ]
-                const currentIndex = fields.indexOf(selectedField)
+                const currentIndex = researchFields.indexOf(selectedField)
                 if (currentIndex > 0) {
-                    setSelectedField(fields[currentIndex - 1])
+                    setSelectedField(researchFields[currentIndex - 1])
                 }
             } else if (e.key === 'ArrowDown') {
-                const fields: ResearchRecordField[] = [
-                    'researchGoal',
-                    'targetCondition',
-                    'hasSensorDevice',
-                    'deviceType',
-                    'category',
-                    'sensorType',
-                    'method',
-                    'placement',
-                    'measurementVariable',
-                    'benefits',
-                    'primaryPurpose',
-                    'performanceMetrics',
-                    'deviceLimitation',
-                    'measurementUnit',
-                    'measurementPrecision',
-                ]
-                const currentIndex = fields.indexOf(selectedField)
-                if (currentIndex < fields.length - 1) {
-                    setSelectedField(fields[currentIndex + 1])
+                const currentIndex = researchFields.indexOf(selectedField)
+                if (currentIndex < researchFields.length - 1) {
+                    setSelectedField(researchFields[currentIndex + 1])
                 }
             }
 
@@ -159,7 +151,7 @@ function RouteComponent() {
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [selectedField, canGoToPrevious, canGoToNext, currentPaperNumber, setCurrentPaperIndex])
+    }, [selectedField, canGoToPrevious, canGoToNext, currentPaperNumber, setCurrentPaperIndex, currentPaper, rateResearchDetail])
 
     if (!currentPaper) {
         return null // The loader will handle the redirect
@@ -171,7 +163,7 @@ function RouteComponent() {
     )
 
     return (
-        <div className='flex flex-col h-full'>
+        <div className='flex h-full flex-col'>
             <div className={'flex shrink-0 gap-12 border-b px-3 pb-2'}>
                 <div className={'grow truncate'}>
                     <h3
@@ -252,23 +244,31 @@ function RouteComponent() {
                     </div>
                     <dl
                         className={
-                            'flex items-center justify-end gap-1.5 text-sm'
+                            'flex items-center justify-end gap-2.5 text-sm'
                         }
                     >
-                        <dd>4</dd>
-                        <dt aria-label={'Number of approved research details'}>
-                            <Check className={'size-4'} />
-                        </dt>
-                        <dd className={'ml-2'}>5</dd>
-                        <dt aria-label={'Number of rejected research details'}>
-                            <Ban className={'size-4'} />
-                        </dt>
-                        <dd className={'ml-2'}>2</dd>
-                        <dt
-                            aria-label={'Number of unreviewed research details'}
-                        >
-                            <Hourglass className={'size-4'} />
-                        </dt>
+                        <div className='flex items-center gap-0.75'>
+                            <dd>{papers.filter(paper => {
+                                const completedReviews = researchFields.filter(
+                                    (field: ResearchRecordField) => getResearchDetailRating(paper.filename, field) !== null
+                                ).length
+                                return completedReviews === researchFields.length
+                            }).length}</dd>
+                            <dt aria-label={'Number of reviewed papers'}>
+                                <Check className={'size-4.5'} />
+                            </dt>
+                        </div>
+                        <div className='flex items-center gap-1.5'>
+                            <dd>{papers.filter(paper => {
+                                const completedReviews = researchFields.filter(
+                                    (field: ResearchRecordField) => getResearchDetailRating(paper.filename, field) !== null
+                                ).length
+                                return completedReviews < researchFields.length
+                            }).length}</dd>
+                            <dt aria-label={'Number of unreviewed papers'}>
+                                <Hourglass className={'size-3.5'} />
+                            </dt>
+                        </div>
                     </dl>
                 </div>
             </div>
@@ -288,42 +288,125 @@ function RouteComponent() {
                             <SelectValue placeholder='Select a research detail' />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value='researchGoal'>
-                                Research Goal
+                            <SelectItem value='researchGoal' className="flex items-center justify-between">
+                                <span>Research Goal</span>
+                                {getResearchDetailRating(currentPaper.filename, 'researchGoal') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='targetCondition'>
-                                Target condition
+                            <SelectItem value='targetCondition' className="flex items-center justify-between">
+                                <span>Target condition</span>
+                                {getResearchDetailRating(currentPaper.filename, 'targetCondition') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='hasSensorDevice'>
-                                Sensor, device, imaging technique, or labratory testing mentioned?
+                            <SelectItem value='hasSensorDevice' className="flex items-center justify-between">
+                                <span>Sensor, device, imaging technique, or labratory testing mentioned?</span>
+                                {getResearchDetailRating(currentPaper.filename, 'hasSensorDevice') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='deviceType'>
-                                Device / sensor / technique/ test/ inspection type
+                            <SelectItem value='deviceType' className="flex items-center justify-between">
+                                <span>Device / sensor / technique/ test/ inspection type</span>
+                                {getResearchDetailRating(currentPaper.filename, 'deviceType') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='category'>Category</SelectItem>
-                            <SelectItem value='sensorType'>
-                                Sensor Type
+                            <SelectItem value='category' className="flex items-center justify-between">
+                                <span>Category</span>
+                                {getResearchDetailRating(currentPaper.filename, 'category') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='method'>Method</SelectItem>
-                            <SelectItem value='placement'>Placement</SelectItem>
-                            <SelectItem value='measurementVariable'>
-                                Measurement Variable
+                            <SelectItem value='sensorType' className="flex items-center justify-between">
+                                <span>Sensor Type</span>
+                                {getResearchDetailRating(currentPaper.filename, 'sensorType') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='benefits'>Benefits of use</SelectItem>
-                            <SelectItem value='primaryPurpose'>
-                                Primary Purpose
+                            <SelectItem value='method' className="flex items-center justify-between">
+                                <span>Method</span>
+                                {getResearchDetailRating(currentPaper.filename, 'method') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='performanceMetrics'>
-                                Performance Metrics
+                            <SelectItem value='placement' className="flex items-center justify-between">
+                                <span>Placement</span>
+                                {getResearchDetailRating(currentPaper.filename, 'placement') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='deviceLimitation'>
-                                Device Limitation
+                            <SelectItem value='measurementVariable' className="flex items-center justify-between">
+                                <span>Measurement Variable</span>
+                                {getResearchDetailRating(currentPaper.filename, 'measurementVariable') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='measurementUnit'>
-                                Measurement Unit
+                            <SelectItem value='benefits' className="flex items-center justify-between">
+                                <span>Benefits of use</span>
+                                {getResearchDetailRating(currentPaper.filename, 'benefits') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
-                            <SelectItem value='measurementPrecision'>
-                                Measurement Precision
+                            <SelectItem value='primaryPurpose' className="flex items-center justify-between">
+                                <span>Primary Purpose</span>
+                                {getResearchDetailRating(currentPaper.filename, 'primaryPurpose') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
+                            </SelectItem>
+                            <SelectItem value='performanceMetrics' className="flex items-center justify-between">
+                                <span>Performance Metrics</span>
+                                {getResearchDetailRating(currentPaper.filename, 'performanceMetrics') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
+                            </SelectItem>
+                            <SelectItem value='deviceLimitation' className="flex items-center justify-between">
+                                <span>Device Limitation</span>
+                                {getResearchDetailRating(currentPaper.filename, 'deviceLimitation') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
+                            </SelectItem>
+                            <SelectItem value='measurementUnit' className="flex items-center justify-between">
+                                <span>Measurement Unit</span>
+                                {getResearchDetailRating(currentPaper.filename, 'measurementUnit') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
+                            </SelectItem>
+                            <SelectItem value='measurementPrecision' className="flex items-center justify-between">
+                                <span>Measurement Precision</span>
+                                {getResearchDetailRating(currentPaper.filename, 'measurementPrecision') !== null ? (
+                                    <Check className="size-4 text-primary ml-2" />
+                                ) : (
+                                    <Hourglass className="size-4 text-orange-500 ml-2" />
+                                )}
                             </SelectItem>
                         </SelectContent>
                     </Select>
@@ -337,7 +420,11 @@ function RouteComponent() {
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel>
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className='h-full'>
+                    <Tabs
+                        value={activeTab}
+                        onValueChange={setActiveTab}
+                        className='h-full'
+                    >
                         <TabsList
                             className={
                                 '[&_button[data-state=active]]:border-foreground bg-transparent [&_button[data-state=active]]:border [&_button[data-state=active]]:bg-transparent [&_button[data-state=active]]:shadow-none'
@@ -349,7 +436,10 @@ function RouteComponent() {
                             </TabsTrigger>
                             <TabsTrigger value={'tables'}>Tables</TabsTrigger>
                         </TabsList>
-                        <TabsContent value={'quotes'} className='h-full overflow-y-auto'>
+                        <TabsContent
+                            value={'quotes'}
+                            className='h-full overflow-y-auto'
+                        >
                             <div
                                 className={
                                     'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
@@ -363,7 +453,10 @@ function RouteComponent() {
                                 </Markdown>
                             </div>
                         </TabsContent>
-                        <TabsContent value={'reasoning'} className='h-full overflow-y-auto'>
+                        <TabsContent
+                            value={'reasoning'}
+                            className='h-full overflow-y-auto'
+                        >
                             <div
                                 className={
                                     'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
@@ -377,7 +470,10 @@ function RouteComponent() {
                                 </Markdown>
                             </div>
                         </TabsContent>
-                        <TabsContent value={'tables'} className='h-full overflow-y-auto'>
+                        <TabsContent
+                            value={'tables'}
+                            className='h-full overflow-y-auto'
+                        >
                             <div
                                 className={
                                     'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
@@ -394,13 +490,17 @@ function RouteComponent() {
                     </Tabs>
                 </ResizablePanel>
             </ResizablePanelGroup>
-            <div className={'absolute right-3 bottom-1 flex gap-2 p-1 rounded-md backdrop-blur-md'}>
+            <div
+                className={
+                    'absolute left-1 bottom-1 flex gap-2 p-1 rounded-md backdrop-blur-md'
+                }
+            >
                 <div className='flex items-center gap-1'>
                     {[1, 2, 3, 4, 5].map(rating => (
                         <button
                             key={rating}
                             className={`text-muted-foreground transition-colors hover:text-yellow-500 ${
-                                currentRating === rating
+                                currentRating && rating <= currentRating
                                     ? 'text-yellow-500'
                                     : ''
                             }`}
@@ -412,7 +512,10 @@ function RouteComponent() {
                                 )
                             }
                         >
-                            <Star className='size-5' />
+                            <Star
+                                className='size-5'
+                                fill={currentRating && rating <= currentRating ? 'currentColor' : 'none'}
+                            />
                         </button>
                     ))}
                 </div>
