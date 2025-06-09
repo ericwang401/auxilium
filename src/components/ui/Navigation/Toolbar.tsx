@@ -6,14 +6,14 @@ import {
     MenubarTrigger,
 } from '@/components/ui/menubar'
 import { open } from '@tauri-apps/plugin-dialog'
-import { parseSpreadsheet } from '@/api/spreadsheet'
+import { parseSpreadsheet, exportReviewData } from '@/api/spreadsheet'
 import { useReviewStore } from '@/stores/review'
 import { showNotification } from '@/utils/notification'
 import { useNavigate } from '@tanstack/react-router'
 
 const Toolbar = () => {
     const navigate = useNavigate()
-    const { loadSpreadsheet } = useReviewStore()
+    const { loadSpreadsheet, papers, ratings } = useReviewStore()
 
     const handleOpenSpreadsheet = async () => {
         try {
@@ -44,6 +44,31 @@ const Toolbar = () => {
         }
     }
 
+    const handleExportSpreadsheet = async () => {
+        try {
+            const exportData = papers.map(paper => ({
+                filename: paper.filename,
+                ratings: Object.fromEntries(
+                    Object.entries(ratings[paper.filename] || {})
+                        .filter(([_, value]) => value !== null)
+                        .map(([key, value]) => [key, (value?.rating || 0) * 2])
+                )
+            }))
+
+            await exportReviewData(exportData)
+            await showNotification(
+                'Export Successful',
+                'Review data has been exported successfully'
+            )
+        } catch (error) {
+            console.error('Error exporting spreadsheet:', error)
+            await showNotification(
+                'Error',
+                `Failed to export spreadsheet: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+        }
+    }
+
     return (
         <Menubar className='rounded-none border-none shadow-none'>
             <MenubarMenu>
@@ -52,7 +77,7 @@ const Toolbar = () => {
                     <MenubarItem onClick={handleOpenSpreadsheet}>
                         Open spreadsheet
                     </MenubarItem>
-                    <MenubarItem>
+                    <MenubarItem onClick={handleExportSpreadsheet}>
                         Export spreadsheet
                     </MenubarItem>
                     <MenubarItem>
@@ -60,6 +85,9 @@ const Toolbar = () => {
                     </MenubarItem>
                     <MenubarItem>
                         Save auxl
+                    </MenubarItem>
+                    <MenubarItem>
+                        Save auxl as
                     </MenubarItem>
                 </MenubarContent>
             </MenubarMenu>

@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
+use std::io::Write;
+use tauri::AppHandle;
+use tauri_plugin_dialog::DialogExt;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ResearchRecord {
@@ -93,10 +96,15 @@ pub struct ParsedSpreadsheet {
     pub total_count: usize,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ReviewExport {
+    pub filename: String,
+    pub ratings: HashMap<String, f32>,
+}
+
 #[tauri::command]
 pub fn parse_spreadsheet(file_path: String) -> Result<ParsedSpreadsheet, String> {
-    let file = File::open(&file_path)
-        .map_err(|e| format!("Failed to open file: {}", e))?;
+    let file = File::open(&file_path).map_err(|e| format!("Failed to open file: {}", e))?;
 
     let mut reader = csv::Reader::from_reader(file);
     let mut records = Vec::new();
@@ -117,9 +125,7 @@ pub fn parse_spreadsheet(file_path: String) -> Result<ParsedSpreadsheet, String>
 
 fn parse_csv_record(record: &csv::StringRecord) -> Result<ResearchRecord, String> {
     // Helper function to safely get field or return empty string
-    let get_field = |index: usize| -> String {
-        record.get(index).unwrap_or("").to_string()
-    };
+    let get_field = |index: usize| -> String { record.get(index).unwrap_or("").to_string() };
 
     Ok(ResearchRecord {
         // Basic publication info (columns 0-7)
@@ -228,4 +234,79 @@ fn parse_csv_record(record: &csv::StringRecord) -> Result<ResearchRecord, String
             },
         },
     })
+}
+
+#[tauri::command]
+pub fn export_reviews(app: AppHandle, reviews: Vec<ReviewExport>) -> Result<(), String> {
+    let mut writer = csv::Writer::from_writer(vec![]);
+
+    // Write header
+    writer
+        .write_record(&[
+            "filename",
+            "Research Goal",
+            "Target condition",
+            "Sensor, device, imaging technique, or labratory testing mentioned?",
+            "Device / sensor / technique/ test/ inspection type",
+            "Category",
+            "Sensor Type",
+            "Method",
+            "Placement",
+            "Measurement Variable",
+            "Benefits of use",
+            "Primary Purpose",
+            "Performance Metrics",
+            "Device Limitation",
+            "Measurement Unit",
+            "Measurement Precision",
+        ])
+        .map_err(|e| e.to_string())?;
+
+    // Write data rows
+    for review in reviews {
+        let mut record = vec![review.filename];
+        let fields = [
+            "research_goal",
+            "target_condition",
+            "has_sensor_device",
+            "device_type",
+            "category",
+            "sensor_type",
+            "method",
+            "placement",
+            "measurement_variable",
+            "benefits",
+            "primary_purpose",
+            "performance_metrics",
+            "device_limitation",
+            "measurement_unit",
+            "measurement_precision",
+        ];
+
+        for field in fields {
+            let rating = review.ratings.get(field).unwrap_or(&0.0);
+            record.push(rating.to_string());
+        }
+
+        writer.write_record(&record).map_err(|e| e.to_string())?;
+    }
+
+    let data = writer.into_inner().map_err(|e| e.to_string())?;
+
+    // Open save dialog
+    app.dialog()
+        .file()
+        .add_filter("CSV", &["csv"])
+        .set_file_name("review-export.csv")
+        .save_file(move |file_path| {
+            if let Some(path) = file_path {
+                if let Some(path) = path.as_path() {
+                    if let Ok(mut file) = File::create(path) {
+                        let _ = file.write_all(&data);
+                    }
+                }
+            }
+        });
+
+    Ok(())
 }

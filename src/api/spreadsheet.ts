@@ -19,3 +19,7 @@ export async function parseSpreadsheet(
         )
     }
 }
+
+export const exportReviewData = async (data: { filename: string; ratings: Record<string, number> }[]) => {
+    await invoke('export_reviews', { reviews: data })
+}
