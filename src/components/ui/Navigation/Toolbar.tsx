@@ -1,3 +1,15 @@
+import { useReviewStore } from '@/stores/review'
+import { showNotification } from '@/utils/notification'
+import { useNavigate } from '@tanstack/react-router'
+import { getVersion } from '@tauri-apps/api/app'
+import { UnlistenFn } from '@tauri-apps/api/event'
+import { Window, getCurrentWindow } from '@tauri-apps/api/window'
+import { confirm, message, open } from '@tauri-apps/plugin-dialog'
+import { openUrl } from '@tauri-apps/plugin-opener'
+import { useEffect, useRef } from 'react'
+
+import { exportReviewData, parseSpreadsheet } from '@/api/spreadsheet'
+
 import {
     Menubar,
     MenubarContent,
@@ -5,17 +17,6 @@ import {
     MenubarMenu,
     MenubarTrigger,
 } from '@/components/ui/menubar'
-import { confirm, message, open } from '@tauri-apps/plugin-dialog'
-import { parseSpreadsheet, exportReviewData } from '@/api/spreadsheet'
-import { useReviewStore } from '@/stores/review'
-import { showNotification } from '@/utils/notification'
-import { useNavigate } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { Window } from '@tauri-apps/api/window'
-import { getVersion } from '@tauri-apps/api/app';
-import { openUrl } from '@tauri-apps/plugin-opener';
-
-
 
 const Toolbar = () => {
     const navigate = useNavigate()
@@ -26,8 +27,10 @@ const Toolbar = () => {
         openFile,
         saveFile,
         saveFileAs,
-        hasUnsavedChanges
+        hasUnsavedChanges,
     } = useReviewStore()
+
+    const unlisten = useRef<UnlistenFn>()
 
     useEffect(() => {
         // Update window title to show unsaved changes
@@ -51,21 +54,33 @@ const Toolbar = () => {
 
     // Add beforeunload handler
     useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (hasUnsavedChanges) {
-                e.preventDefault()
-                e.returnValue = ''
-            }
+        const main = async () => {
+            unlisten.current = await getCurrentWindow().onCloseRequested(
+                async event => {
+                    if (hasUnsavedChanges) {
+                        const shouldContinue = await confirm(
+                            'You have unsaved changes. Are you sure you want to close the app?'
+                        )
+
+                        if (!shouldContinue) {
+                            event.preventDefault()
+                        }
+                    }
+                }
+            )
         }
 
-        window.addEventListener('beforeunload', handleBeforeUnload)
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+        main()
+
+        return () => unlisten.current?.()
     }, [hasUnsavedChanges])
 
     const handleOpenSpreadsheet = async () => {
         try {
             if (papers.length > 0) {
-                const shouldContinue = await confirm('Are you sure you want to open a new spreadsheet? This will discard all your unsaved changes.')
+                const shouldContinue = await confirm(
+                    'Are you sure you want to open a new spreadsheet? This will discard all your unsaved changes.'
+                )
                 if (!shouldContinue) {
                     return
                 }
@@ -106,7 +121,7 @@ const Toolbar = () => {
                     Object.entries(ratings[paper.filename] || {})
                         .filter(([_, value]) => value !== null)
                         .map(([key, value]) => [key, (value?.rating || 0) * 2])
-                )
+                ),
             }))
 
             await exportReviewData(exportData)
@@ -125,7 +140,9 @@ const Toolbar = () => {
 
     const showAbout = async () => {
         const version = await getVersion()
-        message(`Auxilium is a tool for reviewing research papers (a overkill app for a very specific use case and very specific data format! lol)\n\nVersion: ${version}\n\nAuthor: Eric Wang`)
+        message(
+            `Auxilium is a tool for reviewing research papers (a overkill app for a very specific use case and very specific data format! lol)\n\nVersion: ${version}\n\nAuthor: Eric Wang`
+        )
     }
 
     return (
@@ -139,15 +156,9 @@ const Toolbar = () => {
                     <MenubarItem onClick={handleExportSpreadsheet}>
                         Export spreadsheet
                     </MenubarItem>
-                    <MenubarItem onClick={openFile}>
-                        Open auxl
-                    </MenubarItem>
-                    <MenubarItem onClick={saveFile}>
-                        Save auxl
-                    </MenubarItem>
-                    <MenubarItem onClick={saveFileAs}>
-                        Save auxl as
-                    </MenubarItem>
+                    <MenubarItem onClick={openFile}>Open auxl</MenubarItem>
+                    <MenubarItem onClick={saveFile}>Save auxl</MenubarItem>
+                    <MenubarItem onClick={saveFileAs}>Save auxl as</MenubarItem>
                 </MenubarContent>
             </MenubarMenu>
             <MenubarMenu>
@@ -161,10 +172,12 @@ const Toolbar = () => {
             <MenubarMenu>
                 <MenubarTrigger>Help</MenubarTrigger>
                 <MenubarContent>
-                    <MenubarItem onClick={showAbout}>
-                        About
-                    </MenubarItem>
-                    <MenubarItem onClick={() => openUrl('https://github.com/ericwang401/auxilium')}>
+                    <MenubarItem onClick={showAbout}>About</MenubarItem>
+                    <MenubarItem
+                        onClick={() =>
+                            openUrl('https://github.com/ericwang401/auxilium')
+                        }
+                    >
                         Source code
                     </MenubarItem>
                 </MenubarContent>
