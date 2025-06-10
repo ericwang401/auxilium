@@ -240,8 +240,6 @@ fn parse_csv_record(record: &csv::StringRecord) -> Result<ResearchRecord, String
 pub fn export_reviews(app: AppHandle, reviews: Vec<ReviewExport>) -> Result<(), String> {
     let mut writer = csv::Writer::from_writer(vec![]);
 
-    dbg!(&reviews);
-
     // Write header
     writer
         .write_record(&[
