@@ -120,7 +120,7 @@ const Toolbar = () => {
                 ratings: Object.fromEntries(
                     Object.entries(ratings[paper.filename] || {})
                         .filter(([_, value]) => value !== null)
-                        .map(([key, value]) => [key, (value?.rating || 0) * 2])
+                        .map(([key, value]) => [key, value?.rating || 0])
                 ),
             }))
 

@@ -1,5 +1,5 @@
 import { useReviewStore } from '@/stores/review'
-import type { ResearchRecordField } from '@/types/spreadsheet'
+import type { ResearchRecordField, SupportingEvidence } from '@/types/spreadsheet'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useParams } from '@tanstack/react-router'
 import {
@@ -75,6 +75,54 @@ const researchFields: ResearchRecordField[] = [
     'measurementUnit',
     'measurementPrecision',
 ]
+
+// Type for fields that have supporting evidence
+type FieldWithEvidence = Extract<ResearchRecordField,
+    | 'researchGoal'
+    | 'targetCondition'
+    | 'hasSensorDevice'
+    | 'deviceType'
+    | 'category'
+    | 'sensorType'
+    | 'method'
+    | 'placement'
+    | 'measurementVariable'
+    | 'benefits'
+    | 'primaryPurpose'
+    | 'performanceMetrics'
+    | 'deviceLimitation'
+    | 'measurementUnit'
+    | 'measurementPrecision'
+>
+
+// Map field names to their corresponding supporting evidence field names
+function getSupportingEvidenceField(field: FieldWithEvidence): keyof SupportingEvidence {
+    if (field === 'hasSensorDevice') {
+        return 'sensorDevice'
+    }
+    return field
+}
+
+// Type guard to ensure a field has supporting evidence
+function hasSupportingEvidence(field: ResearchRecordField): field is FieldWithEvidence {
+    return field in {
+        researchGoal: true,
+        targetCondition: true,
+        hasSensorDevice: true,
+        deviceType: true,
+        category: true,
+        sensorType: true,
+        method: true,
+        placement: true,
+        measurementVariable: true,
+        benefits: true,
+        primaryPurpose: true,
+        performanceMetrics: true,
+        deviceLimitation: true,
+        measurementUnit: true,
+        measurementPrecision: true,
+    }
+}
 
 function RouteComponent() {
     const {
@@ -435,57 +483,61 @@ function RouteComponent() {
                             </TabsTrigger>
                             <TabsTrigger value={'tables'}>Tables</TabsTrigger>
                         </TabsList>
-                        <TabsContent
-                            value={'quotes'}
-                            className='h-full overflow-y-auto'
-                        >
-                            <div
-                                className={
-                                    'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
-                                }
-                            >
-                                <Markdown>
-                                    {
-                                        currentPaper.supportingEvidence.benefits
-                                            .quotes
-                                    }
-                                </Markdown>
-                            </div>
-                        </TabsContent>
-                        <TabsContent
-                            value={'reasoning'}
-                            className='h-full overflow-y-auto'
-                        >
-                            <div
-                                className={
-                                    'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
-                                }
-                            >
-                                <Markdown>
-                                    {
-                                        currentPaper.supportingEvidence.benefits
-                                            .reasoning
-                                    }
-                                </Markdown>
-                            </div>
-                        </TabsContent>
-                        <TabsContent
-                            value={'tables'}
-                            className='h-full overflow-y-auto'
-                        >
-                            <div
-                                className={
-                                    'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
-                                }
-                            >
-                                <Markdown>
-                                    {
-                                        currentPaper.supportingEvidence.benefits
-                                            .tables
-                                    }
-                                </Markdown>
-                            </div>
-                        </TabsContent>
+                        {hasSupportingEvidence(selectedField) && (
+                            <>
+                                <TabsContent
+                                    value={'quotes'}
+                                    className='h-full overflow-y-auto'
+                                >
+                                    <div
+                                        className={
+                                            'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
+                                        }
+                                    >
+                                        <Markdown>
+                                            {
+                                                currentPaper.supportingEvidence[getSupportingEvidenceField(selectedField)]
+                                                    .quotes
+                                            }
+                                        </Markdown>
+                                    </div>
+                                </TabsContent>
+                                <TabsContent
+                                    value={'reasoning'}
+                                    className='h-full overflow-y-auto'
+                                >
+                                    <div
+                                        className={
+                                            'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
+                                        }
+                                    >
+                                        <Markdown>
+                                            {
+                                                currentPaper.supportingEvidence[getSupportingEvidenceField(selectedField)]
+                                                    .reasoning
+                                            }
+                                        </Markdown>
+                                    </div>
+                                </TabsContent>
+                                <TabsContent
+                                    value={'tables'}
+                                    className='h-full overflow-y-auto'
+                                >
+                                    <div
+                                        className={
+                                            'h-full overflow-y-auto p-2 pb-36 [&_ul]:list-disc [&_ul]:pl-5'
+                                        }
+                                    >
+                                        <Markdown>
+                                            {
+                                                currentPaper.supportingEvidence[getSupportingEvidenceField(selectedField)]
+                                                    .tables
+                                            }
+                                        </Markdown>
+                                    </div>
+                                </TabsContent>
+                            </>
+                        )}
                     </Tabs>
                 </ResizablePanel>
             </ResizablePanelGroup>
